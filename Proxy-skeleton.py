@@ -20,12 +20,6 @@ proxyPort = int(args.port)
 try:
   # Create a server socket
   # ~~~~ INSERT CODE ~~~~
-  
-  # initialize server socket
-  tcpServerSocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-  # reuset the socket 
-  tcpServerSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-  
   # ~~~~ END CODE INSERT ~~~~
   print ('Created socket')
 except:
@@ -35,10 +29,6 @@ except:
 try:
   # Bind the the server socket to a host and port
   # ~~~~ INSERT CODE ~~~~
-  
-  # bind the socket to the port
-  tcpServerSocket.bind((proxyHost, proxyPort))
-  
   # ~~~~ END CODE INSERT ~~~~
   print ('Port is bound')
 except:
@@ -48,10 +38,6 @@ except:
 try:
   # Listen on the server socket
   # ~~~~ INSERT CODE ~~~~
-  
-  # start listening
-  tcpServerSocket.listen(10)
-  
   # ~~~~ END CODE INSERT ~~~~
   print ('Listening to socket')
 except:
@@ -66,10 +52,6 @@ while True:
   # Accept connection from client and store in the clientSocket
   try:
     # ~~~~ INSERT CODE ~~~~
-    
-    clientSocket, addr = tcpServerSocket.accept()
-    print('client address: ' + addr)
-    
     # ~~~~ END CODE INSERT ~~~~
     print ('Received a connection')
   except:
@@ -79,9 +61,6 @@ while True:
   # Get HTTP request from client
   # and store it in the variable: message_bytes
   # ~~~~ INSERT CODE ~~~~
-  
-  message_bytes = clientSocket.recv(BUFFER_SIZE)
-  
   # ~~~~ END CODE INSERT ~~~~
   message = message_bytes.decode('utf-8')
   print ('Received request:')
@@ -134,9 +113,6 @@ while True:
     # ProxyServer finds a cache hit
     # Send back response to client 
     # ~~~~ INSERT CODE ~~~~
-    
-    clientSocket.send("".join(cacheData).encode('utf-8'))
-    
     # ~~~~ END CODE INSERT ~~~~
     cacheFile.close()
     print ('Sent to the client:')
@@ -147,9 +123,6 @@ while True:
     # Create a socket to connect to origin server
     # and store in originServerSocket
     # ~~~~ INSERT CODE ~~~~
-    
-    originServerSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    
     # ~~~~ END CODE INSERT ~~~~
 
     print ('Connecting to:\t\t' + hostname + '\n')
@@ -158,9 +131,6 @@ while True:
       address = socket.gethostbyname(hostname)
       # Connect to the origin server
       # ~~~~ INSERT CODE ~~~~
-      
-      originServerSocket.connect((address, 80))
-      
       # ~~~~ END CODE INSERT ~~~~
       print ('Connected to origin Server')
 
@@ -171,9 +141,6 @@ while True:
       # originServerRequest is the first line in the request and
       # originServerRequestHeader is the second line in the request
       # ~~~~ INSERT CODE ~~~~
-      
-      
-      
       # ~~~~ END CODE INSERT ~~~~
 
       # Construct the request to send to the origin server

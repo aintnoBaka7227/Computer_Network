@@ -206,7 +206,6 @@ while True:
       
       clientSocket.sendall(originServerResponse)
       print("origin server response sent to client")
-      print ('> ' + originServerResponse)
       
       # ~~~~ END CODE INSERT ~~~~
 

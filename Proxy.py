@@ -172,7 +172,8 @@ while True:
       # originServerRequestHeader is the second line in the request
       # ~~~~ INSERT CODE ~~~~
       
-      
+      originServerRequest = method + " " + resource + " " + version
+      originServerRequestHeader = "Host: " + hostname
       
       # ~~~~ END CODE INSERT ~~~~
 
@@ -194,6 +195,9 @@ while True:
 
       # Get the response from the origin server
       # ~~~~ INSERT CODE ~~~~
+      
+      
+      
       # ~~~~ END CODE INSERT ~~~~
 
       # Send the response to the client

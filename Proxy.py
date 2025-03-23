@@ -50,7 +50,7 @@ try:
   # ~~~~ INSERT CODE ~~~~
   
   # start listening
-  tcpServerSocket.listen(10)
+  tcpServerSocket.listen(5)
   
   # ~~~~ END CODE INSERT ~~~~
   print ('Listening to socket')

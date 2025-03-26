@@ -135,13 +135,9 @@ while True:
     # Send back response to client 
     # ~~~~ INSERT CODE ~~~~
     
-    try: 
-      #clientSocket.send("".join(cacheData).encode())
-      clientSocket.sendall(cacheData.encode())
-    except socket.error:
-      print("error sending data to client")
-      sys.exit()
-        
+    # clientSocket.send("".join(cacheData).encode('utf-8'))
+    clientSocket.sendall(cacheData)
+    
     # ~~~~ END CODE INSERT ~~~~
     cacheFile.close()
     print ('Sent to the client:')
@@ -202,18 +198,15 @@ while True:
       # ~~~~ INSERT CODE ~~~~
       
       originServerResponse = originServerSocket.recv(BUFFER_SIZE)
+      print("received origin server response: " + originServerResponse)
       
       # ~~~~ END CODE INSERT ~~~~
 
       # Send the response to the client
       # ~~~~ INSERT CODE ~~~~
       
-      try: 
-        clientSocket.sendall(originServerResponse)
-        print("origin server response sent to client")
-      except: 
-        print("failed to send origin server response to client")
-        sys.exit()
+      clientSocket.sendall(originServerResponse)
+      print("origin server response sent to client")
       
       # ~~~~ END CODE INSERT ~~~~
 
@@ -248,3 +241,4 @@ while True:
     clientSocket.close()
   except:
     print ('Failed to close client socket')
+

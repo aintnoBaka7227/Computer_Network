@@ -136,7 +136,6 @@ while True:
     # ~~~~ INSERT CODE ~~~~
     
     try: 
-      #clientSocket.send("".join(cacheData).encode())
       clientSocket.sendall(cacheData.encode())
     except socket.error:
       print("error sending data to client")
@@ -228,7 +227,6 @@ while True:
       # ~~~~ INSERT CODE ~~~~
       
       cacheFile.write(originServerResponse)
-      cacheFile.close()
       print("origin server response cached")
       
       # ~~~~ END CODE INSERT ~~~~

@@ -24,7 +24,7 @@ try:
   # initialize server socket
   tcpServerSocket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
   # reuset the socket 
-  tcpServerSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+  #tcpServerSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
   
   # ~~~~ END CODE INSERT ~~~~
   print ('Created socket')
@@ -210,7 +210,7 @@ while True:
       try: 
         clientSocket.sendall(originServerResponse)
         print("origin server response sent to client")
-      except: 
+      except socket.error: 
         print("failed to send origin server response to client")
         sys.exit()
       

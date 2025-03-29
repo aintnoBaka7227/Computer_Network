@@ -135,9 +135,12 @@ while True:
     # Send back response to client 
     # ~~~~ INSERT CODE ~~~~
     
+    cacheData = "".join(cacheData)
     try: 
+      print("data is about to be sent")
       clientSocket.sendall(cacheData.encode())
-    except socket.error:
+      print("data is sent")
+    except:
       print("error sending data to client")
       sys.exit()
         
@@ -176,7 +179,7 @@ while True:
       # originServerRequestHeader is the second line in the request
       # ~~~~ INSERT CODE ~~~~
       
-      originServerRequest = method + "/ " + resource + " " + version
+      originServerRequest = method + " " + resource + " " + version
       originServerRequestHeader = "Host: " + hostname
       
       # ~~~~ END CODE INSERT ~~~~

@@ -253,6 +253,8 @@ while True:
       status = response_starter_line.split()[1]    
       print(status)  
       
+      # need to handle no-cache and max-age
+      
       # ~~~~ END CODE INSERT ~~~~
 
       if ("no-store" not in cache_control and status != "302") or (status == "302" and "max-age" in cache_control): 

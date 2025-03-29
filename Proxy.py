@@ -80,6 +80,16 @@ while True:
   # and store it in the variable: message_bytes
   # ~~~~ INSERT CODE ~~~~
   
+  # chunks = []
+  # bytes_recd = 0
+  # MAX_SIZE = 2000000
+  # while bytes_recd < MAX_SIZE: 
+  #   message_chunk = clientSocket.recv(min(MAX_SIZE - bytes_recd, BUFFER_SIZE))
+  #   if message_chunk == b'':
+  #     break
+  #   chunks.append(message_chunk)
+  #   bytes_recd = bytes_recd + BUFFER_SIZE
+  # message_bytes = b''.join(chunks)
   message_bytes = clientSocket.recv(BUFFER_SIZE)
   
   # ~~~~ END CODE INSERT ~~~~
@@ -194,7 +204,7 @@ while True:
 
       try:
         originServerSocket.sendall(request.encode())
-      except socket.error:
+      except:
         print ('Forward request to origin failed')
         sys.exit()
 
@@ -202,6 +212,17 @@ while True:
 
       # Get the response from the origin server
       # ~~~~ INSERT CODE ~~~~
+      
+      # new_chunks = []
+      # bytes_recd = 0
+      # MAX_SIZE = 2000000
+      # while bytes_recd < MAX_SIZE: 
+      #   message_chunk = originServerSocket.recv(min(MAX_SIZE - bytes_recd, BUFFER_SIZE))
+      #   if message_chunk == b'':
+      #     break
+      #   new_chunks.append(message_chunk)
+      #   bytes_recd = bytes_recd + len(message_chunk) 
+      # originServerResponse = b''.join(new_chunks)
       
       originServerResponse = originServerSocket.recv(BUFFER_SIZE)
       
@@ -213,33 +234,51 @@ while True:
       try: 
         clientSocket.sendall(originServerResponse)
         print("origin server response sent to client")
-      except socket.error: 
+      except: 
         print("failed to send origin server response to client")
         sys.exit()
+        
+      # no-store 
+      cache_control = ""
+      header_end = originServerResponse.find(b'\r\n\r\n')
+      headers = originServerResponse[:header_end].decode('utf-8').split("\r\n")
+      for line in headers: 
+        if line.startswith("Cache-Control"):
+          cache_control = line.split(":")[1].strip()
+          if "no-store" in cache_control:
+            break
+      
+      # 302
+      response_starter_line = headers[0]
+      status = response_starter_line.split()[1]    
+      print(status)  
       
       # ~~~~ END CODE INSERT ~~~~
 
-      # Create a new file in the cache for the requested file.
-      cacheDir, file = os.path.split(cacheLocation)
-      print ('cached directory ' + cacheDir)
-      if not os.path.exists(cacheDir):
-        os.makedirs(cacheDir)
-      cacheFile = open(cacheLocation, 'wb')
+      if ("no-store" not in cache_control and status != "302") or (status == "302" and "max-age" in cache_control): 
+        # Create a new file in the cache for the requested file.
+        cacheDir, file = os.path.split(cacheLocation)
+        print ('cached directory ' + cacheDir)
+        if not os.path.exists(cacheDir):
+          os.makedirs(cacheDir)
+        cacheFile = open(cacheLocation, 'wb')
 
-      # Save origin server response in the cache file
-      # ~~~~ INSERT CODE ~~~~
+        # Save origin server response in the cache file
+        # ~~~~ INSERT CODE ~~~~
       
-      cacheFile.write(originServerResponse)
-      print("origin server response cached")
+        cacheFile.write(originServerResponse)
+        print("origin server response cached")
       
-      # ~~~~ END CODE INSERT ~~~~
-      cacheFile.close()
-      print ('cache file closed')
-
+        # ~~~~ END CODE INSERT ~~~~
+        cacheFile.close()
+        print ('cache file closed')
+      else: 
+        print("cached not allowed")
+      
       # finished communicating with origin server - shutdown socket writes
       print ('origin response received. Closing sockets')
       originServerSocket.close()
-       
+      
       clientSocket.shutdown(socket.SHUT_WR)
       print ('client socket shutdown for writing')
     except OSError as err:

@@ -176,7 +176,7 @@ while True:
       # originServerRequestHeader is the second line in the request
       # ~~~~ INSERT CODE ~~~~
       
-      originServerRequest = method + " " + resource + " " + version
+      originServerRequest = method + "/ " + resource + " " + version
       originServerRequestHeader = "Host: " + hostname
       
       # ~~~~ END CODE INSERT ~~~~

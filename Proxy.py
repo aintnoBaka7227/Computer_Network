@@ -4,6 +4,8 @@ import sys
 import os
 import argparse
 import re
+import time
+from email.utils import parsedate_to_datetime
 
 # 1MB buffer size
 BUFFER_SIZE = 1000000
@@ -145,14 +147,36 @@ while True:
     # Send back response to client 
     # ~~~~ INSERT CODE ~~~~
     
-    cacheData = "".join(cacheData)
-    try: 
-      print("data is about to be sent")
-      clientSocket.sendall(cacheData.encode())
-      print("data is sent")
-    except:
-      print("error sending data to client")
-      sys.exit()
+    cache_control = ""
+    max_age = None
+    header_end = originServerResponse.find(b'\r\n\r\n')
+    headers = originServerResponse[:header_end].decode('utf-8').split("\r\n")
+    date_header = None
+    for line in headers:
+      if line.lower().startswith("date:"):
+        date_header = line.split(":", 1)[1].strip() 
+      if line.startswith("Cache-Control"):
+        cache_control = line.split(":")[1].strip()
+        max_age_match = re.search(r'max-age=(\d+)', cache_control)
+        if max_age_match:
+          max_age = int(max_age_match.group(1))
+          print(max_age)
+          
+    response_time = parsedate_to_datetime(date_header).timestamp()
+    current_time = time.time()
+    age = current_time - response_time
+    
+    if (age <= max_age):
+      cacheData = "".join(cacheData)
+      try: 
+        print("data is about to be sent")
+        clientSocket.sendall(cacheData.encode())
+        print("data is sent")
+      except:
+        print("error sending data to client")
+        sys.exit()
+    else: 
+      print("cache expired")
         
     # ~~~~ END CODE INSERT ~~~~
     cacheFile.close()
@@ -239,6 +263,7 @@ while True:
         
       # no-store 
       cache_control = ""
+      max_age = None
       header_end = originServerResponse.find(b'\r\n\r\n')
       headers = originServerResponse[:header_end].decode('utf-8').split("\r\n")
       for line in headers: 
@@ -246,6 +271,10 @@ while True:
           cache_control = line.split(":")[1].strip()
           if "no-store" in cache_control:
             break
+          max_age_match = re.search(r'max-age=(\d+)', cache_control)
+          if max_age_match:
+            max_age = int(max_age_match.group(1))
+            print(max_age)
       
       # 302
       response_starter_line = headers[0]
@@ -256,7 +285,7 @@ while True:
       
       # ~~~~ END CODE INSERT ~~~~
 
-      if ("no-store" not in cache_control and status != "302") or (status == "302" and "public" in cache_control): 
+      if (("no-store" not in cache_control) and status != "302") and max_age != 0 and max_age != None: 
         # Create a new file in the cache for the requested file.
         cacheDir, file = os.path.split(cacheLocation)
         print ('cached directory ' + cacheDir)

@@ -215,9 +215,8 @@ while True:
       
       # new_chunks = []
       # bytes_recd = 0
-      # MAX_SIZE = 2000000
-      # while bytes_recd < MAX_SIZE: 
-      #   message_chunk = originServerSocket.recv(min(MAX_SIZE - bytes_recd, BUFFER_SIZE))
+      # while True: 
+      #   message_chunk = originServerSocket.recv(BUFFER_SIZE)
       #   if message_chunk == b'':
       #     break
       #   new_chunks.append(message_chunk)
@@ -253,11 +252,11 @@ while True:
       status = response_starter_line.split()[1]    
       print(status)  
       
-      # need to handle no-cache and max-age
+      # need to handle  max-age
       
       # ~~~~ END CODE INSERT ~~~~
 
-      if ("no-store" not in cache_control and status != "302") or (status == "302" and "max-age" in cache_control): 
+      if ("no-store" not in cache_control and status != "302") or (status == "302" and "public" in cache_control): 
         # Create a new file in the cache for the requested file.
         cacheDir, file = os.path.split(cacheLocation)
         print ('cached directory ' + cacheDir)

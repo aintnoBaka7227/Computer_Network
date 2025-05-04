@@ -103,10 +103,10 @@ void A_input(struct pkt packet)
     /*checking for new ACKs*/ 
     if (!acked[packet.acknum]) {
       acked[packet.acknum] = true;
-      total_ACKs_received++;
       new_ACKs++;
       if (TRACE > 0)
         printf("----A: uncorrupted ACK %d is received\n",packet.acknum);
+      total_ACKs_received++;
     }
     
     int seqfirst;
@@ -122,7 +122,9 @@ void A_input(struct pkt packet)
       starttimer(A, RTT);
     }
   }
-
+  else 
+    if (TRACE > 0)
+      printf ("----A: corrupted ACK is received, do nothing!\n");
 }
 
 /* called when A's timer goes off */
@@ -192,7 +194,7 @@ void B_input(struct pkt packet)
   /*Check if the packet is corrupted*/ 
   if (IsCorrupted(packet)) {
     if (TRACE > 0)
-        printf("----B: Received corrupted packet, ignoring\n");
+    printf("----B: packet corrupted or not expected sequence number, resend ACK!\n");
     return;
   }
 

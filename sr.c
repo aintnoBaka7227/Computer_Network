@@ -183,7 +183,57 @@ static struct pkt recv_buffer[SEQSPACE];
 /* called from layer 3, when a packet arrives for layer 4 at B*/
 void B_input(struct pkt packet)
 {
+  struct pkt ackpkt;
+  // Check if the packet is corrupted
+  if (IsCorrupted(packet)) {
+    if (TRACE > 0)
+        printf("----B: Received corrupted packet, ignoring\n");
+    return;
+  }
+
+  // check if the packet is within the receiver's window
+  int start = expectedseqnum; 
+  int end = (expectedseqnum + WINDOWSIZE - 1) % SEQSPACE;
+  bool in_window = (start <= end && packet.seqnum >= start && packet.seqnum <= end) || (start > end && (packet.seqnum >= start || packet.seqnum <= end)); 
+
+  if (in_window) {
+    ackpkt.acknum = packet.seqnum;
+    ackpkt.seqnum = NOTINUSE;
+    for (int i = 0; i < 20; i++) {
+      ackpkt.payload[i] = '0';
+    }
+    ackpkt.checksum = ComputeChecksum(ackpkt); 
+    tolayer3(B, ackpkt);
+
+    if (TRACE > 0) {
+      pprintf("----B: packet %d is correctly received, send ACK!\n",packet.seqnum);
+    }
+    packets_received++;
+
+    if (packet.seqnum == expectedseqnum) {
+      tolayer5(B, packet.payload);
+      received[packet.seqnum] = true;
+
+      expectedseqnum = (expectedseqnum + 1) % SEQSPACE;
   
+      while (received[expectedseqnum]) {
+        tolayer5(B, recv_buffer[expectedseqnum].payload);
+        received[expectedseqnum] = false;
+        expectedseqnum = (expectedseqnum+1)%SEQSPACE;
+      }
+    }
+    else {
+      if (!received[packet.seqnum]) {
+        recv_buffer[packet.seqnum] = packet; 
+        received[packet.seqnum] = true;
+      }
+    }
+  } 
+  else {
+    if (TRACE > 0) {
+      printf("----B: Packet %d is outside the window, ignoring\n", packet.seqnum);
+    }
+  }
 }
 
 /* the following routine will be called once (only) before any other */

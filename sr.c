@@ -149,10 +149,9 @@ void A_timerinterrupt(void)
           }
         */ 
     }
-
-    if (windowcount > 0) {
-      starttimer(A, RTT);
-    }
+  }
+  if (windowcount > 0) {
+    starttimer(A, RTT);
   }
 }       
 

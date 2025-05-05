@@ -210,7 +210,7 @@ void B_input(struct pkt packet)
     if (TRACE > 0) {
       printf("----B: packet %d is correctly received, send ACK!\n",packet.seqnum);
     }
-
+    /* if packet is new marked it down*/
     if (!isReceived[packet.seqnum]) {
       receiver_buffer[packet.seqnum] = packet; 
       isReceived[packet.seqnum] = true;

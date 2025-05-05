@@ -56,7 +56,7 @@ void A_output(struct msg message)
 
   int start = A_nextseqnum; 
   int end = windowfirst;
-  bool in_window = ((end - start + SEQSPACE) % SEQSPACE < WINDOWSIZE);
+  bool in_window = ((start - end + SEQSPACE) % SEQSPACE < WINDOWSIZE);
 
   /* if not blocked waiting on ACK */
   if (in_window) {
@@ -111,7 +111,7 @@ void A_input(struct pkt packet)
   
   int start = packet.acknum; 
   int end = windowfirst;
-  bool in_window = ((end - start + SEQSPACE) % SEQSPACE < WINDOWSIZE);
+  bool in_window = ((start - end + SEQSPACE) % SEQSPACE < WINDOWSIZE);
   /*check if ack is within window*/
   if (in_window) {
     if (TRACE > 0) {
@@ -203,7 +203,7 @@ void B_input(struct pkt packet)
   /*check if the packet is within the receiver's window*/
   int start = packet.seqnum; 
   int end = expectedseqnum;
-  bool in_window = ((end - start + SEQSPACE) % SEQSPACE < WINDOWSIZE);
+  bool in_window = ((start - end + SEQSPACE) % SEQSPACE < WINDOWSIZE);
 
   if (in_window) {
 

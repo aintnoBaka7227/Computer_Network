@@ -43,9 +43,10 @@ bool IsCorrupted(struct pkt packet)
 /********* Sender (A) variables and functions ************/
 
 static struct pkt buffer[WINDOWSIZE];  /* array for storing packets waiting for ACK */
-static int windowfirst, windowlast;    /* array indexes of the first/last packet awaiting ACK */
-static int windowcount;                /* the number of packets currently awaiting an ACK */
+static int windowfirst;    /* array indexes of the first packet awaiting ACK */
 static int A_nextseqnum;               /* the next sequence number to be used by the sender */
+/*create ack[] to track the state of each individual packet (acked or not)*/ 
+static bool isAcked[SEQSPACE];
 
 /* called from layer 5 (application layer), passed the message to be sent to other side */
 void A_output(struct msg message)
@@ -58,7 +59,7 @@ void A_output(struct msg message)
   bool in_window = ((end - start + SEQSPACE) % SEQSPACE < WINDOWSIZE);
 
   /* if not blocked waiting on ACK */
-  if ( windowcount < WINDOWSIZE) {
+  if (in_window) {
     if (TRACE > 1)
       printf("----A: New message arrives, send window is not full, send new messge to layer3!\n");
 
@@ -69,10 +70,9 @@ void A_output(struct msg message)
       sendpkt.payload[i] = message.data[i];
     sendpkt.checksum = ComputeChecksum(sendpkt); 
 
-    /* put packet in window buffer */
-    windowlast = (windowlast + 1) % WINDOWSIZE; 
-    buffer[windowlast] = sendpkt;
-    windowcount++;
+    /* put packet in window buffer */ 
+    buffer[A_nextseqnum] = sendpkt;
+    isAcked[A_nextseqnum] = false;
 
     /* send out packet */
     if (TRACE > 0)
@@ -80,7 +80,7 @@ void A_output(struct msg message)
     tolayer3 (A, sendpkt);
 
     /* start timer if first packet in window */
-    if (windowcount == 1)
+    if (windowfirst == A_nextseqnum)
       starttimer(A,RTT);
 
     /* get next sequence number, wrap back to 0 */
@@ -99,36 +99,13 @@ void A_output(struct msg message)
    In this practical this will always be an ACK as B never sends data.
 */
 
-/*create ack[] to track the state of each individual packet (acked or not)*/ 
-static bool acked[SEQSPACE];
+
 void A_input(struct pkt packet)
 {
-  int seqfirst;
-  if(!IsCorrupted(packet)) {
-    /*checking for new ACKs*/ 
-    if (!acked[packet.acknum]) {
-      acked[packet.acknum] = true;
-      new_ACKs++;
-      if (TRACE > 0)
-        printf("----A: uncorrupted ACK %d is received\n",packet.acknum);
-      total_ACKs_received++;
-    }
-    
-    seqfirst = buffer[windowfirst].seqnum;
-    while (windowcount > 0 && acked[seqfirst]) {
-      acked[seqfirst] = false;
-      windowfirst = (windowfirst + 1) % WINDOWSIZE;
-      windowcount--;
-    }
-    
-    stoptimer(A);
-    if (windowcount > 0) {
-      starttimer(A, RTT);
-    }
+  if (IsCorrupted(packet)) {
+    return;
   }
-  else 
-    if (TRACE > 0)
-      printf ("----A: corrupted ACK is received, do nothing!\n");
+  
 }
 
 /* called when A's timer goes off */
